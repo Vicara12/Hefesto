@@ -5,7 +5,7 @@
 
 #define PROBLEM_DIM 2
 
-enum VType {solid, convection_boundary};
+enum VType {solid, convection_boundary, fixed_T_boundary};
 enum Positions {E, W, U, D, F, B};
 
 
@@ -16,7 +16,9 @@ class Volume
 {
 public:
 
-    virtual std::vector<double> getEquation (const Volume *boundaries) = 0;
+    virtual void getEquation (const Volume *boundaries,
+                              double *coefs,
+                              int n_nodes) = 0;
 
     VType volumeType () const;
 
@@ -36,25 +38,28 @@ class SolidVolume : public Volume
 {
 public:
 
-    SolidVolume (double volume, double alpha, double qv, double *surfaces,
-                 Volume **boundaries, double index);
+    SolidVolume (double volume, double lambda, double qv, double *surfaces,
+                 Volume **boundaries, int index, double *position);
 
     // coefst is the index equation with the format  sum(a_i * x_i) = b_i
-    void getEquation (const Volume *boundaries, std::vector<double> &coefs);
+    void getEquation (const Volume *boundaries, double *coefs, int n_nodes);
 
-    double setAlpha (double new_alpha);
+    void setLambda  (double new_lambda);
 
 private:
 
-    double getAlpha () const;
+    double getLambda  () const;
     double getIndex () const;
+    // get distance between two solid volume centers
+    double distanceToVolume (const SolidVolume *other) const;
 
     const Volume *boundaries_ [PROBLEM_DIM*2];
     double volume_;
     double qv_;
     double surface_ [PROBLEM_DIM*2];
-    double alpha_;
-    double index_;
+    double lambda_;
+    int index_;
+    double position_ [PROBLEM_DIM];
 };
 
 
@@ -77,11 +82,31 @@ public:
 
 private:
     // this method does nothing because it's a boundary, not a volume
-    std::vector<double> getEquation (const Volume *boundaries);
+    void getEquation (const Volume *boundaries, double *coefs, int n_nodes);
 
     double T_ext_;
     double alpha_;
     double surface_;
 };
+
+
+
+// class for fixed temperature boundaries
+class FixedTBoundary : public Volume
+{
+public:
+
+    FixedTBoundary (double T);
+
+    void setT (double new_T);
+    double getT () const;
+
+private:
+    // this method does nothing because it's a boundary, not a volume
+    void getEquation (const Volume *boundaries, double *coefs, int n_nodes);
+
+    double T_;
+};
+
 
 #endif
