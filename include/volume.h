@@ -8,7 +8,8 @@
 enum VType {solid, convection_boundary, fixed_T_boundary};
 enum Positions {E, W, U, D, F, B};
 
-
+typedef std::vector<std::vector<double>> DoubleMatrix;
+typedef std::vector<double> DoubleVector;
 
 
 // abstract class for a generic volume
@@ -16,9 +17,7 @@ class Volume
 {
 public:
 
-    virtual void getEquation (const Volume *boundaries,
-                              double *coefs,
-                              int n_nodes) = 0;
+    virtual void print(int index) const = 0;
 
     VType volumeType () const;
 
@@ -38,7 +37,7 @@ class FixedTBoundary : public Volume
 {
 public:
 
-    FixedTBoundary (double T, double *position);
+    FixedTBoundary (double T, const double *position);
 
     void setT (double new_T);
     double getT () const;
@@ -46,9 +45,9 @@ public:
     // returns the position in the axis indicated by coordinate
     double getCoordinate (int dimension) const;
 
+    void print (int index) const override;
+
 private:
-    // this method does nothing because it's a boundary, not a volume
-    void getEquation (const Volume *boundaries, double *coefs, int n_nodes) override;
 
     double T_;
     double position_ [PROBLEM_DIM];
@@ -61,13 +60,18 @@ class SolidVolume : public Volume
 {
 public:
 
-    SolidVolume (double volume, double lambda, double qv, double *surfaces,
-                 Volume **boundaries, int index, double *position);
+    SolidVolume (double volume, double lambda, double qv, const double *surfaces,
+                 int index, const double *position);
+    
+    void setBoundaries (const Volume **boundaries);
 
+    // setBoundaries must be called before this method
     // coefst is the index equation with the format  sum(a_i * x_i) = b_i
-    void getEquation (const Volume *boundaries, double *coefs, int n_nodes) override;
+    void getEquation (DoubleVector &coefs);
 
     void setLambda  (double new_lambda);
+
+    void print (int index) const override;
 
 private:
 
@@ -100,9 +104,9 @@ public:
     void setAlpha (double new_alpha);
     double getAlpha () const;
 
+    void print (int index) const override;
+
 private:
-    // this method does nothing because it's a boundary, not a volume
-    void getEquation (const Volume *boundaries, double *coefs, int n_nodes) override;
 
     double T_ext_;
     double alpha_;
