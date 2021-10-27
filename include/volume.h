@@ -51,10 +51,10 @@ class SolidVolume : public Volume
 {
 public:
 
-    SolidVolume (double volume, double lambda, double qv, const double *surfaces,
-                 int index, const double *position);
+    SolidVolume (double volume, double lambda, double qv, const DoubleVector &surfaces,
+                 int index, const DoubleVector &position);
     
-    void setBoundaries (const Volume **boundaries);
+    void setBoundaries (const std::vector<const Volume*> &boundaries);
 
     // setBoundaries must be called before this method
     // coefst is the index equation with the format  sum(a_i * x_i) = b_i
@@ -74,13 +74,13 @@ private:
     // get distance from this volume to other solid volume or fixed T volume
     double distanceToVolume (const Volume *other) const;
 
-    const Volume *boundaries_ [PROBLEM_DIM*2];
+    std::vector<const Volume*> boundaries_;
     double volume_;
     double qv_;
-    double surface_ [PROBLEM_DIM*2];
+    DoubleVector surface_;
     double lambda_;
     int index_;
-    double position_ [PROBLEM_DIM];
+    DoubleVector position_;
 };
 
 

@@ -20,19 +20,17 @@ Volume::Volume (VType vol_type) :
 
 
 SolidVolume::SolidVolume (double volume, double lambda, double qv,
-                          const double *surfaces, int index,
-                          const double *position) :
-        Volume(VType::solid), lambda_(lambda), qv_(qv), volume_(volume), index_(index)
+                          const DoubleVector &surfaces, int index,
+                          const DoubleVector &position) :
+        Volume(VType::solid), lambda_(lambda), qv_(qv), volume_(volume),
+        index_(index), surface_(surfaces), position_(position),
+        boundaries_(PROBLEM_DIM*2)
 {
-    for (int i = 0; i < PROBLEM_DIM*2; i++)
-        surface_[i] = surfaces[i];
-
-    for (int i = 0; i < PROBLEM_DIM; i++)
-        position_[i] = position[i];
+    //
 }
 
 
-void SolidVolume::setBoundaries (const Volume **boundaries)
+void SolidVolume::setBoundaries (const std::vector<const Volume*> &boundaries)
 {
     for (int i = 0; i < PROBLEM_DIM*2; i++)
         boundaries_[i] = boundaries[i];
@@ -138,6 +136,8 @@ double SolidVolume::distanceToVolume (const Volume *other) const
 
 void SolidVolume::print (int index) const
 {
+    std::cout << "AT NODE " << index << std::endl;
+
     std::cout << " * (" << index << ")Solid volume:\n";
     std::cout << "\tVolume: " << volume_ << " m^3\n";
     std::cout << "\tInternal heat generated: " << qv_ << " W/m^3\n";

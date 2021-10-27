@@ -1,32 +1,21 @@
 #include "mesh.h"
+#include <iostream>
 
 
 Mesh::Mesh (const tMeshData *mesh) :
-        n_volumes(mesh->n_volms), n_boundaries(mesh->n_boundaries)
+        n_volumes(mesh->n_volms), n_boundaries(mesh->n_boundaries),
+        problem_dim_(mesh->pos_volumes[0].size()),
+        node(mesh->n_volms+mesh->n_boundaries)
 {
-    node = new Volume*[n_volumes+n_boundaries];
-
     // build mesh of solid volumes
     for (int i = 0; i < n_volumes; i++)
     {
         double volume = mesh->volms_data[i][0];
         double lambda = mesh->volms_data[i][1];
         double qv = mesh->volms_data[i][2];
-        const double *surfaces = &(mesh->volms_data[i][3]);
-        const Volume *boundaries [PROBLEM_DIM*2];
-        double position [PROBLEM_DIM];
-        
-        for (int j = 0; j < PROBLEM_DIM; j++)
-            position[j] = mesh->pos_volumes[i][j];
-
-        // for each boundary index, get a pointer to it
-        for (int j = 0; j < PROBLEM_DIM*2; j++)
-        {
-            int boundary_index = int(mesh->volms_data[i][3+2*PROBLEM_DIM+j]);
-            boundaries[j] = node[boundary_index];
-        }
             
-        node[i] = new SolidVolume(volume, lambda, qv, surfaces, i, position);
+        node[i] = new SolidVolume(volume, lambda, qv, mesh->surface_volumes[i],
+                                  i, mesh->pos_volumes[i]);
     }
 
     // initialize boundary objects
@@ -58,12 +47,12 @@ Mesh::Mesh (const tMeshData *mesh) :
     // now that all the nodes are already generated, buil conectivities
     for (int i = 0; i < n_volumes; i++)
     {
-        const Volume *boundaries [PROBLEM_DIM*2];
+        std::vector<const Volume*> boundaries(2*problem_dim_);
 
         // for each boundary index, get a pointer to it
-        for (int j = 0; j < PROBLEM_DIM*2; j++)
+        for (int j = 0; j < problem_dim_*2; j++)
         {
-            int boundary_index = int(mesh->volms_data[i][3+2*PROBLEM_DIM+j]);
+            int boundary_index = int(mesh->connectivity_volumes[i][j]);
             boundaries[j] = node[boundary_index];
         }
             
@@ -168,5 +157,6 @@ double Mesh::checkEnergyBalance (const DoubleVector &T) const
 
 Mesh::~Mesh ()
 {
-    delete [] node;
+    for (int i = 0; i < n_boundaries+n_volumes; i++)
+        delete node[i];
 }

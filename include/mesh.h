@@ -16,9 +16,10 @@ typedef struct _tMeshData
     // position for convection boundaries is not needed
     // but must be included (the value given doesn't matter)
     DoubleMatrix pos_volumes;
+    DoubleMatrix surface_volumes;
+    DoubleMatrix connectivity_volumes;
 
-    // for each node: volume, lambda, qv, boundary surfaces value (2*problem dimension values),
-    //       neighbour nodes (2*problem dimension values)
+    // for each node: volume, lambda, qv
     DoubleMatrix volms_data;
 
     // for each boundary: type (VType value), T_ext/T, alpha/distance
@@ -82,8 +83,9 @@ private:
 
     int n_volumes;
     int n_boundaries;
+    int problem_dim_;
 
-    Volume **node; // array with all the nodes
+    std::vector<Volume*> node; // array with all the nodes
 };
 
 #endif

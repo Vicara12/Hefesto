@@ -27,47 +27,57 @@ void buildCylindricalFinMesh (tMeshData &mesh)
 						   // and lower surfaces and other for the adiabatic tip
 
 	mesh.pos_volumes = DoubleMatrix(n_elms, DoubleVector(PROBLEM_DIM, e/2));
-	mesh.volms_data = DoubleMatrix(n_elms, DoubleVector(PROBLEM_DIM*4+3, e/2));
+	mesh.surface_volumes = DoubleMatrix(n_elms, DoubleVector(PROBLEM_DIM*2, 0));
+	mesh.connectivity_volumes =  DoubleMatrix(n_elms, DoubleVector(PROBLEM_DIM*2, 0));
+	mesh.volms_data = DoubleMatrix(n_elms, DoubleVector(PROBLEM_DIM*4+3, 0));
 
 	// initialize all data for the volumes
 	for (int i = 0; i < n_elms; i++)
 	{
 		double r = Ra + delta_r*(i + 0.5);
 		double vert_surface = M_PI*(pow(r+delta_r/2,2) - pow(r-delta_r/2,2));
+
+		// init pos_volues
 		mesh.pos_volumes[i][0] = r;
+
+		// init volms_data
 		mesh.volms_data[i][0] = e*vert_surface;
 		mesh.volms_data[i][1] = lambda;
 		mesh.volms_data[i][2] = 0;
-		mesh.volms_data[i][3] = 2*M_PI*(r-delta_r/2)*e; // left surface
-		mesh.volms_data[i][4] = 2*M_PI*(r+delta_r/2)*e; // right surface
-		mesh.volms_data[i][5] = vert_surface; // down surface
-		mesh.volms_data[i][6] = vert_surface; // up surface
+
+		// init surface_volms
+		mesh.surface_volumes[i][0] = 2*M_PI*(r-delta_r/2)*e; // left surface
+		mesh.surface_volumes[i][1] = 2*M_PI*(r+delta_r/2)*e; // right surface
+		mesh.surface_volumes[i][2] = vert_surface; // down surface
+		mesh.surface_volumes[i][3] = vert_surface; // up surface
+
+		// init connectivity_volumes
 
 		// joint with the tube
 		if (i == 0)
 		{
-			mesh.volms_data[i][7] = n_elms; // fiex t boundary node
-			mesh.volms_data[i][8] = i+1;	// second node
+			mesh.connectivity_volumes[i][0] = n_elms; // fiex t boundary node
+			mesh.connectivity_volumes[i][1] = i+1;	// second node
 		}
 		// tip of the fin
 		else if (i == n_elms-1)
 		{
-			mesh.volms_data[i][7] = i-1; // the volume before the last
-			mesh.volms_data[i][8] = n_elms+2; // adiabatic end node
+			mesh.connectivity_volumes[i][0] = i-1; // the volume before the last
+			mesh.connectivity_volumes[i][1] = n_elms+2; // adiabatic end node
 		}
 		// intermediate nodes
 		else
 		{
-			mesh.volms_data[i][7] = i-1;	// left volume
-			mesh.volms_data[i][8] = i+1;	// right volume
+			mesh.connectivity_volumes[i][0] = i-1;	// left volume
+			mesh.connectivity_volumes[i][1] = i+1;	// right volume
 		}
 
 		// upper and lower part are convective boundary
-		mesh.volms_data[i][9]  = n_elms+1;
-		mesh.volms_data[i][10] = n_elms+1;
+		mesh.connectivity_volumes[i][2]  = n_elms+1;
+		mesh.connectivity_volumes[i][3] = n_elms+1;
 	}
 	
-	// initialize all data for the boundaries
+	// initialize boundary_data
 	mesh.boundary_data = DoubleMatrix({{fixed_T_boundary, Ta, delta_r/2}, // n_elms:   fixed T boundary
 									   {convection_boundary, Tg, alpha},  // n_elms+1: air convection
 									   {convection_boundary, Tg, 0.0}});  // n_elms+2: adiabatic tip
@@ -80,12 +90,20 @@ void buildTestMesh (tMeshData &mesh)
 	mesh.n_boundaries = 8;
 
 	mesh.pos_volumes = DoubleMatrix({{0.5, 0.5},  // (00): volume 0
-							   	    {3.0, 0.5},  // (01): volume 1
+							   	    {3.0, 0.5},   // (01): volume 1
 							   	    {4.5, 0.5}}); // (02): volume 3
 
-	mesh.volms_data = DoubleMatrix({{1.0, 3.0, -1.0, 1.0,1.0,1.0,1.0, 3,1,4,5}, // 0
-									{2.0, 5.0, -2.0, 1.0,1.0,2.0,2.0, 0,2,6,7}, // 1
-									{3.0, 7.0, -9.0, 1.0,1.0,3.0,3.0, 1,10,8,9}}); // 3
+	mesh.volms_data = DoubleMatrix({{1.0, 3.0, -1.0},   // 0
+									{2.0, 5.0, -2.0},   // 1
+									{3.0, 7.0, -9.0}}); // 2
+
+	mesh.surface_volumes = DoubleMatrix({{1.0,1.0,1.0,1.0},   // 0
+										 {1.0,1.0,2.0,2.0},   // 1
+										 {1.0,1.0,3.0,3.0}}); // 2
+	
+	mesh.connectivity_volumes = DoubleMatrix({{3,1,4,5},
+											  {0,2,6,7},
+											  {1,10,8,9}});
 
 	mesh.boundary_data = DoubleMatrix({{fixed_T_boundary   , 342.0, 0.5 }, // 3
 									   {convection_boundary, 303.0, 32.0}, // 4
