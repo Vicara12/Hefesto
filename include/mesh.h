@@ -2,7 +2,7 @@
 #define MESH_H_
 
 #include "volume.h"
-#include <vector>
+#include "definitions.h"
 
 
 typedef struct _tMeshData
@@ -15,13 +15,14 @@ typedef struct _tMeshData
     // by its position in this array
     // position for convection boundaries is not needed
     // but must be included (the value given doesn't matter)
-    DoubleMatrix pos_nodes;
+    DoubleMatrix pos_volumes;
 
     // for each node: volume, lambda, qv, boundary surfaces value (2*problem dimension values),
     //       neighbour nodes (2*problem dimension values)
     DoubleMatrix volms_data;
 
     // for each boundary: type (VType value), T_ext/T, alpha/distance
+    // note: volume types (VType) are defined in definitions.h
     DoubleMatrix boundary_data;
 } tMeshData;
 
@@ -40,9 +41,13 @@ public:
     void setNodeData (const DoubleMatrix &node_data);
     void setBoundaryData (const DoubleMatrix &boundary_data);
 
-    // the ith position of T contains the temperature of the ith volume
-    // T must be a 1D vector of size n_nodes
-    void solveMesh (DoubleVector &T);
+    // The ith position of T contains the temperature of the ith volume.
+    // T must be a 1D vector of size n_nodes and solver the name of a solver from
+    // solver.h. If the selected solver has machine precission and no tolerance
+    // is needed, a dummy value must be provided anyway.
+    //  If verbose = true, the solver will output information about the progress.
+    void solveMesh (void(*solver)(const DoubleMatrix&, DoubleVector&, double, bool),
+                    DoubleVector &T, double tolerance, bool verbose = false);
 
     // T0 must be a 1D vector of length n_nodes detailing the initial conditions,
     // T must be a 2D vector of size time_steps/store_each x n_nodes and
@@ -58,7 +63,12 @@ public:
     
     // from and to indicate the node index that will be printed
     // set to = -1 to print until the last node
-    void printMesh (int from, int to, bool only_volumes = true);
+    void printMesh (int from, int to, bool only_volumes = true) const;
+
+    void printNode (int index) const;
+
+    // Checks if the solution satisfies energy balance for the current mesh
+    double checkEnergyBalance (const DoubleVector &T);
 
     ~Mesh ();
 private:

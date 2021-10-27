@@ -1,7 +1,5 @@
 #include "mesh.h"
 
-#include <iostream>  // delete after debug -------------------------->>>>>>>>>>>
-using namespace std;
 
 Mesh::Mesh (const tMeshData *mesh) :
         n_volumes(mesh->n_volms), n_boundaries(mesh->n_boundaries)
@@ -19,7 +17,7 @@ Mesh::Mesh (const tMeshData *mesh) :
         double position [PROBLEM_DIM];
         
         for (int j = 0; j < PROBLEM_DIM; j++)
-            position[j] = mesh->pos_nodes[i][j];
+            position[j] = mesh->pos_volumes[i][j];
 
         // for each boundary index, get a pointer to it
         for (int j = 0; j < PROBLEM_DIM*2; j++)
@@ -98,20 +96,15 @@ void Mesh::setBoundaryData (const DoubleMatrix &boundary_data)
 }
 
 
-void Mesh::solveMesh (DoubleVector &T)
+void Mesh::solveMesh (void(*solver)(const DoubleMatrix&, DoubleVector&, double, bool),
+                      DoubleVector &T, double tolerance, bool verbose)
 {
     DoubleMatrix eq_sys(n_volumes, DoubleVector(n_volumes+1, 0));
 
     for (int i = 0; i < n_volumes; i++)
         ((SolidVolume*)node[i])->getEquation(eq_sys[i]);
     
-    for (auto l : eq_sys)
-    {
-        for (auto i : l)
-            cout << i << "   ";
-        
-        cout << endl;
-    }
+    solver(eq_sys, T, tolerance, verbose);
 }
 
 
@@ -122,13 +115,19 @@ void Mesh::solveTransitory (const DoubleVector &T0, DoubleMatrix &T,
 }
 
 
-void Mesh::printMesh (int from, int to, bool only_volumes)
+void Mesh::printMesh (int from, int to, bool only_volumes) const
 {
     if (to < 0)
         to = n_volumes + (only_volumes ? 0 : n_boundaries);
     
     for (int i = from; i < to; i++)
         node[i]->print(i);
+}
+
+
+void Mesh::printNode (int index) const
+{
+    node[index]->print(index);
 }
 
 
