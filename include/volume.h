@@ -37,20 +37,19 @@ class FixedTBoundary : public Volume
 {
 public:
 
-    FixedTBoundary (double T, const double *position);
+    FixedTBoundary (double T, double distance);
 
     void setT (double new_T);
     double getT () const;
 
-    // returns the position in the axis indicated by coordinate
-    double getCoordinate (int dimension) const;
-
     void print (int index) const override;
+
+    double getDistance () const;
 
 private:
 
     double T_;
-    double position_ [PROBLEM_DIM];
+    double d_; // distance to the assigned volume's center
 };
 
 

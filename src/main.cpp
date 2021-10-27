@@ -25,18 +25,18 @@ int main ()
 									{2.0, 5.0, -2.0, 1.0,1.0,2.0,2.0, 0,2,6,7}, // 1
 									{3.0, 7.0, -9.0, 1.0,1.0,3.0,3.0, 1,10,8,9}}); // 3
 
-	mesh.boundary_data = DoubleMatrix({{fixed_T_boundary   , 342.0, 0.0 }, // 3
-									   {convection_boundary, 303.0, 32.0}, // 3
-									   {convection_boundary, 302.0, 33.0}, // 3
-									   {convection_boundary, 306.0, 34.0}, // 3
-									   {convection_boundary, 308.0, 35.0}, // 3
-									   {convection_boundary, 307.0, 36.0}, // 3
-									   {convection_boundary, 309.0, 37.0}, // 3
-									   {convection_boundary, 300.0, 38.0}}); // 3
+	mesh.boundary_data = DoubleMatrix({{fixed_T_boundary   , 342.0, 0.5 }, // 3
+									   {convection_boundary, 303.0, 32.0}, // 4
+									   {convection_boundary, 302.0, 33.0}, // 5
+									   {convection_boundary, 306.0, 34.0}, // 6
+									   {convection_boundary, 308.0, 35.0}, // 7
+									   {convection_boundary, 307.0, 36.0}, // 8
+									   {convection_boundary, 309.0, 37.0}, // 9
+									   {convection_boundary, 300.0, 0.0}}); // 10
 
 	Mesh new_mesh(&mesh);
 
-	cout << "GENERATED MESH" << endl << endl;
+	//cout << "GENERATED MESH" << endl << endl;
 
 	new_mesh.printMesh(0, -1);
 

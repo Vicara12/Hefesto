@@ -21,7 +21,7 @@ typedef struct _tMeshData
     //       neighbour nodes (2*problem dimension values)
     DoubleMatrix volms_data;
 
-    // for each boundary: type (VType value), T_ext/T, alpha/0
+    // for each boundary: type (VType value), T_ext/T, alpha/distance
     DoubleMatrix boundary_data;
 } tMeshData;
 

@@ -46,13 +46,10 @@ Mesh::Mesh (const tMeshData *mesh) :
         }
         else if (node_type == fixed_T_boundary)
         {
-            double T = mesh->boundary_data[i][1];;
-            double position [PROBLEM_DIM];
-        
-            for (int j = 0; j < PROBLEM_DIM; j++)
-                position[j] = mesh->pos_nodes[i][j];
+            double T = mesh->boundary_data[i][1];
+            double distance = mesh->boundary_data[i][2];
 
-            node[n_volumes+i] = new FixedTBoundary(T, position);
+            node[n_volumes+i] = new FixedTBoundary(T, distance);
         }
         else
         {

@@ -53,14 +53,14 @@ void SolidVolume::getEquation (DoubleVector &coefs)
         if (boundary_type == VType::solid)
         {
             // cast volume pointer from generic volume to solid volume
-            const SolidVolume *boundary = (SolidVolume*)&(boundaries_[i]);
+            const SolidVolume *boundary = (SolidVolume*)(boundaries_[i]);
 
             int boundary_i = boundary->index_;
             // this is not exactly the average on the boundary of both volumes
             // but in the midlle point between their centers, but it's close enough
             double lambda = 2/(1/this->lambda_ + 1/boundary->lambda_);
             double S = surface_[i];
-            double d = distanceToVolume(boundary);
+            double d = distanceToVolume(boundaries_[i]);
 
             coefs[index_] -= lambda_*S/d;
             coefs[boundary_i] += lambda_*S/d;
@@ -68,7 +68,7 @@ void SolidVolume::getEquation (DoubleVector &coefs)
         else if (boundary_type == VType::convection_boundary)
         {
             // cast volume pointer from generic volume to convection boundary
-            const ConvectionBoundary *boundary = (ConvectionBoundary*)&(boundaries_[i]);
+            const ConvectionBoundary *boundary = (ConvectionBoundary*)(boundaries_[i]);
 
             double alpha = boundary->getAlpha();
             double S = surface_[i];
@@ -80,10 +80,10 @@ void SolidVolume::getEquation (DoubleVector &coefs)
         else if (boundary_type == VType::fixed_T_boundary)
         {
             // cast volume pointer from generic volume to fixed T boundary
-            const FixedTBoundary *boundary = (FixedTBoundary*)&(boundaries_[i]);
+            const FixedTBoundary *boundary = (FixedTBoundary*)(boundaries_[i]);
             
             double S = surface_[i];
-            double d = distanceToVolume(boundary);
+            double d = boundary->getDistance();
 
             coefs[index_] -= lambda_*S/d;
             coefs[n_nodes] -= lambda_*S/d*boundary->getT();
@@ -126,13 +126,6 @@ double SolidVolume::distanceToVolume (const Volume *other) const
 
         for (int i = 0; i < PROBLEM_DIM; i++)
             sum += pow(casted_other->position_[i] - this->position_[i], 2);
-    }
-    else if (other->volumeType() == fixed_T_boundary)
-    {
-        const FixedTBoundary *casted_other = (FixedTBoundary*) other;
-
-        for (int i = 0; i < PROBLEM_DIM; i++)
-            sum += pow(casted_other->getCoordinate(i) - this->position_[i], 2);
     }
     else
     {
@@ -181,7 +174,8 @@ void SolidVolume::print (int index) const
         else if (boundary_type == fixed_T_boundary)
         {
             FixedTBoundary* boundary = (FixedTBoundary*)boundaries_[i];
-            std::cout << "\t   (" << i << ") Fixed T boundary: T = " << boundary->getT() << " K\n";
+            std::cout << "\t   (" << i << ") Fixed T boundary: T = " << boundary->getT() << " K"
+                << "   d = " << boundary->getDistance() << " m\n";
         }
         else
         {
@@ -239,11 +233,10 @@ void ConvectionBoundary::print (int index) const
 ////////////////////////////////////////////////////////////////
 
 
-FixedTBoundary::FixedTBoundary (double T, const double *position) :
-        Volume(VType::fixed_T_boundary), T_(T)
+FixedTBoundary::FixedTBoundary (double T, double distance) :
+        Volume(VType::fixed_T_boundary), T_(T), d_(distance)
 {
-    for (int i = 0; i < PROBLEM_DIM; i++)
-        position_[i] = position[i];
+    //
 }
 
 void FixedTBoundary::setT (double new_T)
@@ -258,9 +251,9 @@ double FixedTBoundary::getT () const
 }
 
 
-double FixedTBoundary::getCoordinate (int dimension) const
+double FixedTBoundary::getDistance () const
 {
-    return position_[dimension];
+    return d_;
 }
 
 
