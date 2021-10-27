@@ -7,6 +7,7 @@
 
 typedef struct _tMeshData
 {
+    unsigned int problem_dimensions;
     int n_volms;
     int n_boundaries;
 
@@ -83,7 +84,7 @@ private:
 
     int n_volumes;
     int n_boundaries;
-    int problem_dim_;
+    unsigned int problem_dim_;
 
     std::vector<Volume*> node; // array with all the nodes
 };

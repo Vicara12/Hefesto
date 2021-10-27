@@ -19,12 +19,12 @@ Volume::Volume (VType vol_type) :
 ////////////////////////////////////////////////////////////////
 
 
-SolidVolume::SolidVolume (double volume, double lambda, double qv,
-                          const DoubleVector &surfaces, int index,
+SolidVolume::SolidVolume (unsigned int n_dimensions, double volume, double lambda,
+                          double qv, const DoubleVector &surfaces, int index,
                           const DoubleVector &position) :
-        Volume(VType::solid), lambda_(lambda), qv_(qv), volume_(volume),
-        index_(index), surface_(surfaces), position_(position),
-        boundaries_(PROBLEM_DIM*2)
+        n_dimensions_(n_dimensions), Volume(VType::solid), lambda_(lambda),
+        qv_(qv), volume_(volume), index_(index), surface_(surfaces),
+        position_(position), boundaries_(n_dimensions_*2)
 {
     //
 }
@@ -32,7 +32,7 @@ SolidVolume::SolidVolume (double volume, double lambda, double qv,
 
 void SolidVolume::setBoundaries (const std::vector<const Volume*> &boundaries)
 {
-    for (int i = 0; i < PROBLEM_DIM*2; i++)
+    for (int i = 0; i < n_dimensions_*2; i++)
         boundaries_[i] = boundaries[i];
 }
 
@@ -42,7 +42,7 @@ void SolidVolume::getEquation (DoubleVector &coefs)
     int n_nodes = coefs.size()-1;
 
     // for each boundary (two per dimension are assumed)
-    for (int i = 0; i < PROBLEM_DIM*2; i++)
+    for (int i = 0; i < n_dimensions_*2; i++)
     {
         VType boundary_type = boundaries_[i]->volumeType();
 
@@ -122,7 +122,7 @@ double SolidVolume::distanceToVolume (const Volume *other) const
     {
         const SolidVolume *casted_other = (SolidVolume*) other;
 
-        for (int i = 0; i < PROBLEM_DIM; i++)
+        for (int i = 0; i < n_dimensions_; i++)
             sum += pow(casted_other->position_[i] - this->position_[i], 2);
     }
     else
@@ -136,27 +136,25 @@ double SolidVolume::distanceToVolume (const Volume *other) const
 
 void SolidVolume::print (int index) const
 {
-    std::cout << "AT NODE " << index << std::endl;
-
-    std::cout << " * (" << index << ")Solid volume:\n";
+    std::cout << " * (" << index << ") Solid volume:\n";
     std::cout << "\tVolume: " << volume_ << " m^3\n";
     std::cout << "\tInternal heat generated: " << qv_ << " W/m^3\n";
     std::cout << "\tLambda: " << lambda_ << " W/(K*m^2)\n";
     std::cout << "\tPosition: ";
 
-    for (int i = 0; i < PROBLEM_DIM; i++)
+    for (int i = 0; i < n_dimensions_; i++)
         std::cout << (i != 0 ? ", " : "") << position_[i];
     std::cout << " m\n";
 
     std::cout << "\tSurfaces: ";
 
-    for (int i = 0; i < PROBLEM_DIM*2; i++)
+    for (int i = 0; i < n_dimensions_*2; i++)
         std::cout << (i != 0 ? ", " : "") << surface_[i];
     std::cout << " m^2\n";
 
     std::cout << "\tBoundaries:\n";
 
-    for (int i = 0; i < PROBLEM_DIM*2; i++)
+    for (int i = 0; i < n_dimensions_*2; i++)
     {
         VType boundary_type = boundaries_[i]->volumeType();
 
@@ -191,7 +189,7 @@ double SolidVolume::checkEnergyBalance (const DoubleVector &T) const
 {
     double total = qv_*volume_;
 
-    for (int i = 0; i < PROBLEM_DIM*2; i++)
+    for (int i = 0; i < n_dimensions_*2; i++)
     {
         VType boundary_type = boundaries_[i]->volumeType();
 

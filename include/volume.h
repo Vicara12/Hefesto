@@ -51,8 +51,8 @@ class SolidVolume : public Volume
 {
 public:
 
-    SolidVolume (double volume, double lambda, double qv, const DoubleVector &surfaces,
-                 int index, const DoubleVector &position);
+    SolidVolume (unsigned int n_dimensions, double volume, double lambda, double qv, 
+                 const DoubleVector &surfaces, int index, const DoubleVector &position);
     
     void setBoundaries (const std::vector<const Volume*> &boundaries);
 
@@ -74,6 +74,7 @@ private:
     // get distance from this volume to other solid volume or fixed T volume
     double distanceToVolume (const Volume *other) const;
 
+    unsigned int n_dimensions_;
     std::vector<const Volume*> boundaries_;
     double volume_;
     double qv_;

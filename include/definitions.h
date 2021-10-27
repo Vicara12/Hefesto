@@ -3,8 +3,6 @@
 
 #include <vector>
 
-#define PROBLEM_DIM 2
-
 enum VType {solid, convection_boundary, fixed_T_boundary};
 
 typedef std::vector<std::vector<double>> DoubleMatrix;

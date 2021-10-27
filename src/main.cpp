@@ -11,6 +11,7 @@ using namespace std;
 
 void buildCylindricalFinMesh (tMeshData &mesh)
 {
+	int n_dims = 2;
 	int n_elms = N_ELMS;
 	double Ra = 0.05;
     double Rb = 0.13;
@@ -22,14 +23,15 @@ void buildCylindricalFinMesh (tMeshData &mesh)
 
 	double delta_r = (Rb-Ra)/n_elms;
 
+	mesh.problem_dimensions = n_dims;
 	mesh.n_volms = n_elms;
 	mesh.n_boundaries = 3; // one fixed T for the join with the tube, other for upper
 						   // and lower surfaces and other for the adiabatic tip
 
-	mesh.pos_volumes = DoubleMatrix(n_elms, DoubleVector(PROBLEM_DIM, e/2));
-	mesh.surface_volumes = DoubleMatrix(n_elms, DoubleVector(PROBLEM_DIM*2, 0));
-	mesh.connectivity_volumes =  DoubleMatrix(n_elms, DoubleVector(PROBLEM_DIM*2, 0));
-	mesh.volms_data = DoubleMatrix(n_elms, DoubleVector(PROBLEM_DIM*4+3, 0));
+	mesh.pos_volumes = DoubleMatrix(n_elms, DoubleVector(n_dims, e/2));
+	mesh.surface_volumes = DoubleMatrix(n_elms, DoubleVector(n_dims*2, 0));
+	mesh.connectivity_volumes =  DoubleMatrix(n_elms, DoubleVector(n_dims*2, 0));
+	mesh.volms_data = DoubleMatrix(n_elms, DoubleVector(n_dims*4+3, 0));
 
 	// initialize all data for the volumes
 	for (int i = 0; i < n_elms; i++)

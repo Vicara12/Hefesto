@@ -4,7 +4,7 @@
 
 Mesh::Mesh (const tMeshData *mesh) :
         n_volumes(mesh->n_volms), n_boundaries(mesh->n_boundaries),
-        problem_dim_(mesh->pos_volumes[0].size()),
+        problem_dim_(mesh->problem_dimensions),
         node(mesh->n_volms+mesh->n_boundaries)
 {
     // build mesh of solid volumes
@@ -14,8 +14,8 @@ Mesh::Mesh (const tMeshData *mesh) :
         double lambda = mesh->volms_data[i][1];
         double qv = mesh->volms_data[i][2];
             
-        node[i] = new SolidVolume(volume, lambda, qv, mesh->surface_volumes[i],
-                                  i, mesh->pos_volumes[i]);
+        node[i] = new SolidVolume(problem_dim_, volume, lambda, qv,
+                            mesh->surface_volumes[i], i, mesh->pos_volumes[i]);
     }
 
     // initialize boundary objects
