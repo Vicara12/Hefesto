@@ -187,6 +187,46 @@ void SolidVolume::print (int index) const
 }
 
 
+double SolidVolume::checkEnergyBalance (const DoubleVector &T) const
+{
+    double total = qv_*volume_;
+
+    for (int i = 0; i < PROBLEM_DIM*2; i++)
+    {
+        VType boundary_type = boundaries_[i]->volumeType();
+
+        if (boundary_type == solid)
+        {
+            SolidVolume* boundary = (SolidVolume*)boundaries_[i];
+            double lambda = 2/(1/this->lambda_ + 1/boundary->lambda_);
+            double d = distanceToVolume(boundaries_[i]);
+
+            total += lambda*(T[boundary->index_] - T[index_])/d*surface_[i];
+        }
+        else if (boundary_type == convection_boundary)
+        {
+            ConvectionBoundary* boundary = (ConvectionBoundary*)boundaries_[i];
+
+            total += boundary->getAlpha()*(boundary->getTExt() - T[index_])*surface_[i];
+        }
+        else if (boundary_type == fixed_T_boundary)
+        {
+            FixedTBoundary* boundary = (FixedTBoundary*)boundaries_[i];
+            double d = boundary->getDistance();
+
+            total += lambda_*(boundary->getT() - T[index_])/d*surface_[i];
+
+        }
+        else
+        {
+            throw "boundary type not implemented at energy balance";
+        }
+    }
+
+    return total;
+}
+
+
 ////////////////////////////////////////////////////////////////
 
 

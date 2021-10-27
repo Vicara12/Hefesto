@@ -45,9 +45,14 @@ public:
     // T must be a 1D vector of size n_nodes and solver the name of a solver from
     // solver.h. If the selected solver has machine precission and no tolerance
     // is needed, a dummy value must be provided anyway.
-    //  If verbose = true, the solver will output information about the progress.
-    void solveMesh (void(*solver)(const DoubleMatrix&, DoubleVector&, double, bool),
-                    DoubleVector &T, double tolerance, bool verbose = false);
+    // If check_solution = true, once the solution is reached the values are
+    // put back into the system in order to check it's equal to zero. In this case
+    // the returned value is the one further away from zero, if check_solution = false
+    // the returned value is always zero.
+    // If verbose = true, the solver will output information about the progress.
+    double solveMesh (void(*solver)(const DoubleMatrix&, DoubleVector&, double, bool),
+                      DoubleVector &T, double tolerance,
+                      bool check_solution = false, bool verbose = false);
 
     // T0 must be a 1D vector of length n_nodes detailing the initial conditions,
     // T must be a 2D vector of size time_steps/store_each x n_nodes and
@@ -67,8 +72,10 @@ public:
 
     void printNode (int index) const;
 
-    // Checks if the solution satisfies energy balance for the current mesh
-    double checkEnergyBalance (const DoubleVector &T);
+    // Check if the solution satisfies energy balance for the current mesh.
+    // Returns the worst energy balance of all nodes (values closer to zero mean
+    // better solutions)
+    double checkEnergyBalance (const DoubleVector &T) const;
 
     ~Mesh ();
 private:

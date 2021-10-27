@@ -96,8 +96,9 @@ void Mesh::setBoundaryData (const DoubleMatrix &boundary_data)
 }
 
 
-void Mesh::solveMesh (void(*solver)(const DoubleMatrix&, DoubleVector&, double, bool),
-                      DoubleVector &T, double tolerance, bool verbose)
+double Mesh::solveMesh (void(*solver)(const DoubleMatrix&, DoubleVector&, double, bool),
+                      DoubleVector &T, double tolerance, bool check_solution,
+                      bool verbose)
 {
     DoubleMatrix eq_sys(n_volumes, DoubleVector(n_volumes+1, 0));
 
@@ -105,6 +106,24 @@ void Mesh::solveMesh (void(*solver)(const DoubleMatrix&, DoubleVector&, double, 
         ((SolidVolume*)node[i])->getEquation(eq_sys[i]);
     
     solver(eq_sys, T, tolerance, verbose);
+
+    double max_error = 0;
+
+    if (check_solution)
+    {
+        for (int i = 0; i < n_volumes; i++)
+        {
+            double this_error = -eq_sys[i][n_volumes];
+
+            for (int j = 0; j < n_volumes; j++)
+                this_error += eq_sys[i][j]*T[j];
+            
+            if (i == 0 or this_error > max_error)
+                max_error = this_error;
+        }
+    }
+
+    return max_error;
 }
 
 
@@ -128,6 +147,22 @@ void Mesh::printMesh (int from, int to, bool only_volumes) const
 void Mesh::printNode (int index) const
 {
     node[index]->print(index);
+}
+
+
+double Mesh::checkEnergyBalance (const DoubleVector &T) const
+{
+    double max_value = ((SolidVolume*)node[0])->checkEnergyBalance(T);
+
+    for (int i = 1; i < n_volumes; i++)
+    {
+        double value = ((SolidVolume*)node[i])->checkEnergyBalance(T);
+
+        if (value > max_value)
+            max_value = value;
+    }
+
+    return max_value;
 }
 
 

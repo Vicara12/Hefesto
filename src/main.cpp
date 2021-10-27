@@ -111,13 +111,16 @@ int main ()
 
 	DoubleVector T;
 
-	new_mesh.solveMesh(gaussSeidel, T, 1e-6, false);
+	double system_error = new_mesh.solveMesh(gaussSeidel, T, 1e-6, true, false);
 
 	cout << endl << endl;
-	cout << "Finished solving mesh, final solution: " << endl << endl;
+	cout << "Finished solving mesh, final solution: " << endl;
 
 	for (int i = 0; i < mesh_data.n_volms; i++)
 	{
 		cout << "Volume " << i << " T = " << T[i] << " K\n";
 	}
+
+	cout << endl << endl << "Worst system equality: " << system_error << endl;
+	cout << "Worst energy balance: " << new_mesh.checkEnergyBalance(T) << endl;
 }

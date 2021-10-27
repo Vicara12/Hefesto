@@ -64,6 +64,9 @@ public:
 
     void print (int index) const override;
 
+    // Checks energy balance for the node at temperature T
+    double checkEnergyBalance (const DoubleVector &T) const;
+
 private:
 
     double getLambda  () const;
