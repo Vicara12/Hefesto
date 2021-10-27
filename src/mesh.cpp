@@ -1,5 +1,6 @@
 #include "mesh.h"
 #include <iostream>
+#include "exceptions.h"
 
 
 Mesh::Mesh (const tMeshData *mesh) :
@@ -7,6 +8,27 @@ Mesh::Mesh (const tMeshData *mesh) :
         problem_dim_(mesh->problem_dimensions),
         node(mesh->n_volms+mesh->n_boundaries)
 {
+    // check mesh vectors are of correct size
+    if (mesh->pos_volumes.size() != n_volumes or
+        mesh->surface_volumes.size() != n_volumes or
+        mesh->connectivity_volumes.size() != n_volumes or
+        mesh->volms_data.size() != n_volumes)
+    {
+        throw UnconsistemNumberOfVolumes();
+    }
+
+    if (mesh->pos_volumes[0].size() != problem_dim_ or
+        mesh->surface_volumes[0].size() != problem_dim_*2 or
+        mesh->connectivity_volumes[0].size() != problem_dim_*2)
+    {
+        throw UnconsistemProblemDimensions();
+    }
+
+    if (mesh->boundary_data.size() != n_boundaries)
+    {
+        throw UnconsistemNumberOfBoundaries();
+    }
+
     // build mesh of solid volumes
     for (int i = 0; i < n_volumes; i++)
     {
@@ -40,7 +62,7 @@ Mesh::Mesh (const tMeshData *mesh) :
         }
         else
         {
-            throw "unrecognized boundary type at mesh assembly";
+            throw MeshUnknownVolume();
         }
     }
 

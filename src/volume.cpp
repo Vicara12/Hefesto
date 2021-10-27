@@ -1,6 +1,7 @@
 #include "volume.h"
 #include <math.h>
 #include <iostream>
+#include "exceptions.h"
 
 
 VType Volume::volumeType () const
@@ -88,7 +89,7 @@ void SolidVolume::getEquation (DoubleVector &coefs)
         }
         else
         {
-            throw "Volume type not recognized at system assembly";
+            throw AssemblyUnknownVolume();
         }
     }
 
@@ -127,7 +128,7 @@ double SolidVolume::distanceToVolume (const Volume *other) const
     }
     else
     {
-        throw "bad call to function distanceToVolume";
+        throw DistanceNotVolume();
     }
     
     return sqrt(sum);
@@ -177,7 +178,7 @@ void SolidVolume::print (int index) const
         }
         else
         {
-            throw "boundary type not implemented at print";
+            throw PrintUnknownVolume();
         }
     }
 
@@ -217,7 +218,7 @@ double SolidVolume::checkEnergyBalance (const DoubleVector &T) const
         }
         else
         {
-            throw "boundary type not implemented at energy balance";
+            throw EnergyBalanceUnknownVolume();
         }
     }
 
